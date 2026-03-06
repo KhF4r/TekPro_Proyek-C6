@@ -1,4 +1,3 @@
-# Menyimpan dan mengambil data dari json
 
 import json
 

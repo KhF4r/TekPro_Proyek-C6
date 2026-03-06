@@ -1,8 +1,8 @@
-from task_add import add_task
-from task_delete import delete_task
-from task_update import mark_done
-from task_display import show_tasks
-from task_storage import load_tasks, save_tasks
+from add_task import add_task
+from delete_task import delete_task
+from task_update import update_task
+from show_tasks import show_tasks
+from storage import load_tasks, save_tasks
 from datetime import date
 
 def main():
@@ -10,8 +10,9 @@ def main():
 
     while True:
         show_tasks(tasks)
-        print("\n1.Tambah  2.Selesai  3.Hapus  4.Keluar")
-        choice = input("Pilih: ")
+        print("\n Daftar Menu")
+        print("1. Tambah Tugas \n2. Update Status  \n3. Hapus Tugas  \n4. Keluar")
+        choice = input("Pilih aksi: ")
 
         if choice == "1":
             title = input("Judul: ")
@@ -20,11 +21,10 @@ def main():
             add_task(tasks, title, created_at, deadline)
 
         elif choice == "2":
-            i = int(input("Index: "))
-            mark_done(tasks, i)
+            update_task(tasks)
 
         elif choice == "3":
-            i = int(input("Index: "))
+            i = int(input("Nomor : "))
             delete_task(tasks, i)
 
         elif choice == "4":

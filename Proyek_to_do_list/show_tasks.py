@@ -7,5 +7,5 @@ def show_tasks(tasks):
         print(f"Judul Tugas : {task['title']}")
         print(f"Status Tugas : {task['done']}")
         print(f"Tanggal ditambahkan : {task['created_at']}")
-        print(f"Deadline : {task['deadline']}")
+        print(f"Deadline : {task['deadline']}\n")
         
