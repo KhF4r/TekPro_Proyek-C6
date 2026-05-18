@@ -34,7 +34,7 @@ class LoginPage(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("BitScore — Login")
-        self.geometry("440x560")
+        self.geometry("440x640")
         self.resizable(False, False)
         self.configure(bg=BG_DEEP)
         self._logged_in = False
@@ -44,7 +44,7 @@ class LoginPage(tk.Tk):
 
     def _center(self):
         self.update_idletasks()
-        w, h = 440, 560
+        w, h = 440, 640
         x = (self.winfo_screenwidth()  - w) // 2
         y = (self.winfo_screenheight() - h) // 2
         self.geometry(f"{w}x{h}+{x}+{y}")
@@ -97,6 +97,13 @@ class LoginPage(tk.Tk):
                                      relief="flat", cursor="hand2", pady=12,
                                      command=self._submit)
         self._submit_btn.pack(fill="x", pady=(14, 0))
+
+        # Tombol Guest — pemisah
+        tk.Label(wrap, text="— atau —", font=F(9), fg=TEXT_MUTED, bg=BG_DEEP).pack(pady=(10, 0))
+        tk.Button(wrap, text="👤  Lanjut sebagai Guest", font=F(10), fg=TEXT_DIM,
+                  bg=BG_SURFACE3, activebackground=BG_SURFACE2,
+                  relief="flat", cursor="hand2", pady=9,
+                  command=self._do_guest).pack(fill="x", pady=(6, 0))
 
         # Hint
         self._hint = tk.Label(wrap, font=F(9), fg=TEXT_MUTED, bg=BG_DEEP)
@@ -218,3 +225,11 @@ class LoginPage(tk.Tk):
         self._status.configure(text="Akun berhasil dibuat! Silakan login.", fg=GREEN)
         self._switch("login")
         self._user_var.set(username)
+
+    def _do_guest(self):
+        """Login sebagai guest — tidak perlu username/password."""
+        from models.user import User
+        guest_user = User(username="Guest", password="", role=Role.GUEST)
+        SESSION.login(guest_user)
+        self._logged_in = True
+        self.destroy()

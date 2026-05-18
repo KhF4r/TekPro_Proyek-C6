@@ -17,7 +17,7 @@ from config.theme import (
 )
 from store.local_store import STORE
 from models.mapper import load_json
-from ui.components.game_card import build_card
+from UI.components.game_card import build_card
 
 
 class HomePage(tk.Frame):

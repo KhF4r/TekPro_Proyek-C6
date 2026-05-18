@@ -11,6 +11,7 @@ from datetime import datetime
 
 
 class Role(Enum):
+    GUEST = "guest"
     USER  = "user"
     ADMIN = "admin"
 
@@ -24,6 +25,9 @@ class User:
 
     def is_admin(self) -> bool:
         return self.role == Role.ADMIN
+
+    def is_guest(self) -> bool:
+        return self.role == Role.GUEST
 
     def to_dict(self) -> dict:
         return {
