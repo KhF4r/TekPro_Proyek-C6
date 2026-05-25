@@ -10,7 +10,6 @@ Bertanggung jawab atas:
 """
 
 import math
-import random
 import threading
 import tkinter as tk
 import tkinter.messagebox as msgbox
@@ -19,15 +18,19 @@ from config.settings import PAGE_SIZE, MAX_SCRAPE, LATEST_JSON, log
 from config.theme import (
     BG_DEEP, BG_PANEL, BG_SURFACE2, BG_SURFACE3,
     BORDER2, ACCENT, ACCENT_LIGHT, ACCENT_DIM,
-    TEXT_WHITE, TEXT_DIM, TEXT_MUTED, AMBER,
+    RED_COL, RED_BG, AMBER,
+    TEXT_WHITE, TEXT_DIM, TEXT_MUTED,
     F,
 )
 from models.mapper import load_json, games_to_ui
 from store.local_store import STORE
-from ui.pages.home_page import HomePage
-from ui.pages.detail_page import DetailPage
-from ui.pages.spec_page import SpecPage
-from ui.components.dialogs import ScrapeDialog
+from auth.session import SESSION
+from auth.guard import guard_admin
+from UI.pages.home_page import HomePage
+from UI.pages.detail_page import DetailPage
+from UI.pages.spec_page import SpecPage
+from UI.pages.admin_page import AdminPage
+from UI.components.dialogs import ScrapeDialog
 
 try:
     import requests
@@ -35,7 +38,7 @@ try:
 except ImportError:
     REQUESTS_AVAILABLE = False
 
-NAV_TABS = ["All Games", "Wishlist", "My Reviews", "Spec Recommender"]
+NAV_TABS = ["All Games", "Wishlist", "Reviews", "Spec Recommender"]
 
 
 class BitScoreApp(tk.Tk):
@@ -46,6 +49,9 @@ class BitScoreApp(tk.Tk):
         self.minsize(960, 640)
         self.configure(bg=BG_DEEP)
         self.resizable(True, True)
+
+        # Flag logout: True = kembali ke login, False = tutup aplikasi sepenuhnya
+        self._want_logout = False
 
         # ── Global state ──────────────────────────────────────────────────────
         self.games: list         = []
@@ -118,10 +124,28 @@ class BitScoreApp(tk.Tk):
         self.se.bind("<Return>",   lambda e: self.home_page.render())
         tk.Label(sr, text="⌕", font=F(12), fg=TEXT_DIM, bg=BG_SURFACE3).pack(side="right", padx=8)
 
-        # Scrape button
-        tk.Button(hdr, text="Scrape", font=F(10, True), fg=TEXT_WHITE, bg=ACCENT,
-                  activebackground=ACCENT_LIGHT, relief="flat", cursor="hand2",
-                  padx=14, command=self._open_scrape).pack(side="right", padx=(0, 14), pady=14)
+        # Scrape button — hanya untuk admin
+        if SESSION.is_admin:
+            tk.Button(hdr, text="Scrape", font=F(10, True), fg=TEXT_WHITE, bg=ACCENT,
+                      activebackground=ACCENT_LIGHT, relief="flat", cursor="hand2",
+                      padx=14, command=self._open_scrape).pack(side="right", padx=(0, 14), pady=14)
+
+        # Logout
+        tk.Button(hdr, text="Logout", font=F(9), fg=TEXT_DIM, bg=BG_SURFACE3,
+                  relief="flat", cursor="hand2", padx=10, pady=6,
+                  command=self._logout).pack(side="right", padx=(0, 6), pady=14)
+
+        # Admin panel button (hanya muncul jika is_admin)
+        if SESSION.is_admin:
+            tk.Button(hdr, text="⚙  Admin", font=F(9, True),
+                      fg=RED_COL, bg=RED_BG,
+                      relief="flat", cursor="hand2", padx=12, pady=6,
+                      command=self._open_admin).pack(side="right", padx=(0, 6), pady=14)
+
+        # Username + role badge (disimpan referensinya agar bisa di-refresh)
+        self._user_badge_anchor = tk.Frame(hdr, bg=BG_PANEL)
+        self._user_badge_anchor.pack(side="right", padx=(0, 8), pady=14)
+        self._refresh_user_badge()
 
         tk.Frame(self, bg=BORDER2, height=1).pack(fill="x")
 
@@ -133,11 +157,13 @@ class BitScoreApp(tk.Tk):
         self.home_page   = HomePage(self._body, self)
         self.detail_page = DetailPage(self._body, self)
         self.spec_page   = SpecPage(self._body, self)
+        self.admin_page  = AdminPage(self._body, self)
 
         self._pages = {
             "home":   self.home_page,
             "detail": self.detail_page,
             "spec":   self.spec_page,
+            "admin":  self.admin_page,
         }
 
     # ══════════════════════════════════════════════════════════════════════════
@@ -168,6 +194,49 @@ class BitScoreApp(tk.Tk):
         self._history.append("home")
         self.detail_page.load(game)
         self._show_page("detail")
+
+    def _open_admin(self):
+        if not guard_admin(self):
+            return
+        self._history.append("home")
+        self.admin_page._switch_tab("users")
+        self._show_page("admin")
+
+    # ══════════════════════════════════════════════════════════════════════════
+    def _refresh_user_badge(self):
+        """Hapus dan rebuild widget username+role di header sesuai SESSION aktif."""
+        anchor = self._user_badge_anchor
+        for w in anchor.winfo_children():
+            w.destroy()
+
+        if SESSION.current_user and SESSION.current_user.is_guest():
+            role_label = "GUEST"
+            role_color = AMBER
+        elif SESSION.is_admin:
+            role_label = "ADMIN"
+            role_color = RED_COL
+        else:
+            role_label = "USER"
+            role_color = ACCENT_LIGHT
+
+        user_f = tk.Frame(anchor, bg=BG_SURFACE3, highlightthickness=1,
+                          highlightbackground=BORDER2)
+        user_f.pack()
+        tk.Label(user_f, text=f"  {SESSION.username}  ", font=F(9),
+                 fg=TEXT_WHITE, bg=BG_SURFACE3, pady=6).pack(side="left")
+        badge_f = tk.Frame(user_f, bg=role_color)
+        badge_f.pack(side="left")
+        tk.Label(badge_f, text=f" {role_label} ", font=F(8, True),
+                 fg=BG_DEEP, bg=role_color, pady=6).pack()
+
+    #  AUTH
+    # ══════════════════════════════════════════════════════════════════════════
+    def _logout(self):
+        if not msgbox.askyesno("Logout", f"Logout dari akun '{SESSION.username}'?", parent=self):
+            return
+        SESSION.logout()
+        self._want_logout = True   # sinyal ke main.py → kembali ke halaman login
+        self.destroy()
 
     # ══════════════════════════════════════════════════════════════════════════
     #  NAV TABS
@@ -200,7 +269,7 @@ class BitScoreApp(tk.Tk):
 
         if tab == "Wishlist":
             games = [g for g in self.games if STORE.in_wl(g["slug"])]
-        elif tab == "My Reviews":
+        elif tab == "Reviews":
             games = [g for g in self.games if STORE.has_rv(g["slug"])]
         else:
             games = list(self.games)

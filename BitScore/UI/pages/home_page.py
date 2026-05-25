@@ -17,7 +17,7 @@ from config.theme import (
 )
 from store.local_store import STORE
 from models.mapper import load_json
-from ui.components.game_card import build_card
+from UI.components.game_card import build_card
 
 
 class HomePage(tk.Frame):
@@ -152,18 +152,23 @@ class HomePage(tk.Frame):
         if not pg:
             msgs = {
                 "Wishlist":   "Wishlist is empty.\nOpen a game → click ♡ Add to Wishlist.",
-                "My Reviews": "No reviews yet.\nOpen a game → the ★ My Reviews tab.",
+                "Reviews": "No reviews yet.\nOpen a game → the ★ Reviews tab.",
             }
             tk.Label(self.gf, text=msgs.get(tab, "Tidak ada game."),
                      font=F(11), fg=TEXT_DIM, bg=BG_DEEP, justify="center").pack(pady=70)
             return
 
-        show_rv = (tab == "My Reviews")
+        show_rv = (tab == "Reviews")
         for rank, game in enumerate(pg, start + 1):
             original_rank = game.get("_rank", rank)
             build_card(self.gf, game, original_rank,
                        open_detail_cb=self.app._open_detail,
                        show_rank=True, show_rv=show_rv)
+
+        # Reset scroll position and recalculate scrollregion after content is built
+        self.cvlist.update_idletasks()
+        self.cvlist.configure(scrollregion=self.cvlist.bbox("all"))
+        self.cvlist.yview_moveto(0)
 
         # Pagination
         if pages > 1:
