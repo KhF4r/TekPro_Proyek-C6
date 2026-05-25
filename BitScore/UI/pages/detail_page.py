@@ -655,6 +655,26 @@ class DetailPage(tk.Frame):
                      fg=TEXT_DIM, bg=BG_DEEP).pack(anchor="w", pady=(0, 12))
 
         # ── Form tulis/edit review milik user saat ini ────────────────────────
+        # Jika guest → tampilkan notifikasi & tombol login, bukan form review
+        if SESSION.current_user and SESSION.current_user.is_guest():
+            guest_box = tk.Frame(body, bg=BG_SURFACE3, highlightthickness=1,
+                                 highlightbackground=BORDER2)
+            guest_box.pack(fill="x", pady=(12, 0))
+
+            tk.Label(guest_box, text="🔒  Login untuk melakukan review",
+                     font=F(11, True), fg=TEXT_WHITE, bg=BG_SURFACE3,
+                     pady=14).pack()
+            tk.Label(guest_box, text="Kamu masuk sebagai Guest. Buat akun atau login\n"
+                                     "untuk bisa menulis review dan memberi rating.",
+                     font=F(9), fg=TEXT_DIM, bg=BG_SURFACE3,
+                     justify="center").pack(pady=(0, 10))
+            tk.Button(guest_box, text="  Login / Daftar  ",
+                      font=F(11, True), fg=TEXT_WHITE, bg=ACCENT,
+                      activebackground=ACCENT_LIGHT, relief="flat",
+                      cursor="hand2", padx=20, pady=10,
+                      command=self._open_login_popup).pack(pady=(0, 16))
+            return
+
         my_rv = STORE.get_user_review(slug, me)
 
         if my_rv:
@@ -723,6 +743,171 @@ class DetailPage(tk.Frame):
                   font=F(12, True), fg=TEXT_WHITE, bg=ACCENT,
                   activebackground=ACCENT_LIGHT, relief="flat", cursor="hand2",
                   padx=20, pady=10, command=_save).pack(side="left")
+
+    def _open_login_popup(self):
+        """Buka popup login untuk guest. Jika berhasil login, refresh tab review."""
+        from auth.login_page import LoginPage
+        from store.user_store import USER_STORE
+        from models.user import Role
+        import tkinter.messagebox as mb
+
+        popup = tk.Toplevel(self)
+        popup.title("BitScore — Login")
+        popup.geometry("440x640")
+        popup.resizable(False, False)
+        popup.configure(bg=BG_DEEP)
+        popup.grab_set()   # modal: blokir window utama selama popup terbuka
+
+        # Pusatkan popup relatif ke window detail
+        self.update_idletasks()
+        px = self.winfo_rootx() + (self.winfo_width()  - 440) // 2
+        py = self.winfo_rooty() + (self.winfo_height() - 640) // 2
+        popup.geometry(f"440x640+{px}+{py}")
+
+        # ── Bangun UI login di dalam Toplevel ────────────────────────────────
+        from config.theme import (
+            BG_PANEL, BG_CARD, BG_SURFACE2, BG_SURFACE3,
+            BORDER2, ACCENT_LIGHT, ACCENT_DIM, ACCENT_BG,
+            GREEN, GREEN_BG, RED_COL, RED_BG,
+            TEXT_WHITE, TEXT_DIM, TEXT_MUTED, AMBER,
+            divider,
+        )
+
+        tk.Frame(popup, bg=ACCENT, height=4).pack(fill="x")
+        wrap = tk.Frame(popup, bg=BG_DEEP)
+        wrap.pack(fill="both", expand=True, padx=40, pady=30)
+
+        # Logo
+        logo_f = tk.Frame(wrap, bg=BG_DEEP)
+        logo_f.pack(pady=(10, 4))
+        tk.Label(logo_f, text="B", font=F(28, True), fg=ACCENT_LIGHT, bg=BG_DEEP).pack(side="left")
+        tk.Label(logo_f, text="itScore", font=F(28, True), fg=TEXT_WHITE, bg=BG_DEEP).pack(side="left")
+        tk.Label(wrap, text="Login untuk menulis review", font=F(10),
+                 fg=TEXT_MUTED, bg=BG_DEEP).pack()
+
+        divider(wrap, pady=16)
+
+        mode_var = tk.StringVar(value="login")
+
+        # Tab
+        tab_f = tk.Frame(wrap, bg=BG_SURFACE3, highlightthickness=1,
+                         highlightbackground=BORDER2)
+        tab_f.pack(fill="x", pady=(0, 16))
+        tab_login = tk.Button(tab_f, text="Login", font=F(10), fg=TEXT_WHITE,
+                              bg=ACCENT, relief="flat", cursor="hand2", pady=8)
+        tab_login.pack(side="left", fill="x", expand=True)
+        tab_reg = tk.Button(tab_f, text="Daftar", font=F(10), fg=TEXT_DIM,
+                            bg=BG_SURFACE3, relief="flat", cursor="hand2", pady=8)
+        tab_reg.pack(side="left", fill="x", expand=True)
+
+        form_f  = tk.Frame(wrap, bg=BG_DEEP)
+        form_f.pack(fill="x")
+        status_lbl = tk.Label(wrap, text="", font=F(9), fg=RED_COL,
+                              bg=BG_DEEP, wraplength=340, justify="center")
+        status_lbl.pack(pady=(6, 0))
+
+        user_var = tk.StringVar()
+        pass_var = tk.StringVar()
+        conf_var = tk.StringVar()
+
+        def _build_form():
+            for w in form_f.winfo_children():
+                w.destroy()
+            # Username
+            tk.Label(form_f, text="USERNAME", font=F(8, True),
+                     fg=TEXT_MUTED, bg=BG_DEEP).pack(anchor="w", pady=(0, 4))
+            uf = tk.Frame(form_f, bg=BG_SURFACE3, highlightthickness=1,
+                          highlightbackground=BORDER2)
+            uf.pack(fill="x", pady=(0, 12))
+            tk.Entry(uf, textvariable=user_var, font=F(11), fg=TEXT_WHITE,
+                     bg=BG_SURFACE3, insertbackground=TEXT_WHITE,
+                     relief="flat", highlightthickness=0).pack(fill="x", padx=10, ipady=8)
+            # Password
+            tk.Label(form_f, text="PASSWORD", font=F(8, True),
+                     fg=TEXT_MUTED, bg=BG_DEEP).pack(anchor="w", pady=(0, 4))
+            pf = tk.Frame(form_f, bg=BG_SURFACE3, highlightthickness=1,
+                          highlightbackground=BORDER2)
+            pf.pack(fill="x", pady=(0, 4))
+            pe = tk.Entry(pf, textvariable=pass_var, show="●", font=F(11),
+                          fg=TEXT_WHITE, bg=BG_SURFACE3,
+                          insertbackground=TEXT_WHITE, relief="flat",
+                          highlightthickness=0)
+            pe.pack(side="left", fill="x", expand=True, padx=10, ipady=8)
+            # Konfirmasi (hanya register)
+            if mode_var.get() == "register":
+                tk.Label(form_f, text="KONFIRMASI PASSWORD", font=F(8, True),
+                         fg=TEXT_MUTED, bg=BG_DEEP).pack(anchor="w", pady=(10, 4))
+                cf = tk.Frame(form_f, bg=BG_SURFACE3, highlightthickness=1,
+                              highlightbackground=BORDER2)
+                cf.pack(fill="x")
+                tk.Entry(cf, textvariable=conf_var, show="●", font=F(11),
+                         fg=TEXT_WHITE, bg=BG_SURFACE3,
+                         insertbackground=TEXT_WHITE, relief="flat",
+                         highlightthickness=0).pack(fill="x", padx=10, ipady=8)
+
+        def _switch(mode):
+            mode_var.set(mode)
+            status_lbl.configure(text="")
+            if mode == "login":
+                tab_login.configure(fg=TEXT_WHITE, bg=ACCENT)
+                tab_reg.configure(fg=TEXT_DIM, bg=BG_SURFACE3)
+                submit_btn.configure(text="Masuk")
+            else:
+                tab_reg.configure(fg=TEXT_WHITE, bg=ACCENT)
+                tab_login.configure(fg=TEXT_DIM, bg=BG_SURFACE3)
+                submit_btn.configure(text="Daftar Sekarang")
+            _build_form()
+
+        tab_login.configure(command=lambda: _switch("login"))
+        tab_reg.configure(command=lambda: _switch("register"))
+
+        submit_btn = tk.Button(wrap, font=F(12, True), fg=TEXT_WHITE, bg=ACCENT,
+                               activebackground=ACCENT_LIGHT, relief="flat",
+                               cursor="hand2", pady=12, text="Masuk")
+        submit_btn.pack(fill="x", pady=(12, 0))
+
+        def _submit():
+            username = user_var.get().strip()
+            password = pass_var.get().strip()
+            status_lbl.configure(text="", fg=RED_COL)
+            if not username or not password:
+                status_lbl.configure(text="Username dan password tidak boleh kosong.")
+                return
+            if mode_var.get() == "login":
+                user = USER_STORE.authenticate(username, password)
+                if not user:
+                    status_lbl.configure(text="Username atau password salah.")
+                    return
+                SESSION.login(user)
+                popup.destroy()
+                # Refresh badge username di header app utama
+                app_root = self.winfo_toplevel()
+                if hasattr(app_root, "_refresh_user_badge"):
+                    app_root._refresh_user_badge()
+                # Refresh tab review agar form muncul
+                self._render_review_tab()
+            else:
+                confirm = conf_var.get().strip()
+                if password != confirm:
+                    status_lbl.configure(text="Password dan konfirmasi tidak cocok.")
+                    return
+                if len(password) < 6:
+                    status_lbl.configure(text="Password minimal 6 karakter.")
+                    return
+                if len(username) < 3:
+                    status_lbl.configure(text="Username minimal 3 karakter.")
+                    return
+                ok = USER_STORE.add(username, password, Role.USER)
+                if not ok:
+                    status_lbl.configure(text=f"Username '{username}' sudah dipakai.")
+                    return
+                status_lbl.configure(text="Akun dibuat! Silakan login.", fg=GREEN)
+                _switch("login")
+                user_var.set(username)
+
+        submit_btn.configure(command=_submit)
+        popup.bind("<Return>", lambda e: _submit())
+        _build_form()
 
     def _del_review(self, slug, username=None):
         who = f" oleh {username}" if username else ""

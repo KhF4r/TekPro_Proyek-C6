@@ -50,6 +50,9 @@ class BitScoreApp(tk.Tk):
         self.configure(bg=BG_DEEP)
         self.resizable(True, True)
 
+        # Flag logout: True = kembali ke login, False = tutup aplikasi sepenuhnya
+        self._want_logout = False
+
         # ── Global state ──────────────────────────────────────────────────────
         self.games: list         = []
         self.search_var          = tk.StringVar()
@@ -139,17 +142,10 @@ class BitScoreApp(tk.Tk):
                       relief="flat", cursor="hand2", padx=12, pady=6,
                       command=self._open_admin).pack(side="right", padx=(0, 6), pady=14)
 
-        # Username + role badge
-        role_label = "ADMIN" if SESSION.is_admin else "USER"
-        role_color = RED_COL if SESSION.is_admin else ACCENT_LIGHT
-        user_f = tk.Frame(hdr, bg=BG_SURFACE3, highlightthickness=1, highlightbackground=BORDER2)
-        user_f.pack(side="right", padx=(0, 8), pady=14)
-        tk.Label(user_f, text=f"  {SESSION.username}  ", font=F(9),
-                 fg=TEXT_WHITE, bg=BG_SURFACE3, pady=6).pack(side="left")
-        badge_f = tk.Frame(user_f, bg=role_color)
-        badge_f.pack(side="left")
-        tk.Label(badge_f, text=f" {role_label} ", font=F(8, True),
-                 fg=BG_DEEP, bg=role_color, pady=6).pack()
+        # Username + role badge (disimpan referensinya agar bisa di-refresh)
+        self._user_badge_anchor = tk.Frame(hdr, bg=BG_PANEL)
+        self._user_badge_anchor.pack(side="right", padx=(0, 8), pady=14)
+        self._refresh_user_badge()
 
         tk.Frame(self, bg=BORDER2, height=1).pack(fill="x")
 
@@ -207,15 +203,40 @@ class BitScoreApp(tk.Tk):
         self._show_page("admin")
 
     # ══════════════════════════════════════════════════════════════════════════
+    def _refresh_user_badge(self):
+        """Hapus dan rebuild widget username+role di header sesuai SESSION aktif."""
+        anchor = self._user_badge_anchor
+        for w in anchor.winfo_children():
+            w.destroy()
+
+        if SESSION.current_user and SESSION.current_user.is_guest():
+            role_label = "GUEST"
+            role_color = AMBER
+        elif SESSION.is_admin:
+            role_label = "ADMIN"
+            role_color = RED_COL
+        else:
+            role_label = "USER"
+            role_color = ACCENT_LIGHT
+
+        user_f = tk.Frame(anchor, bg=BG_SURFACE3, highlightthickness=1,
+                          highlightbackground=BORDER2)
+        user_f.pack()
+        tk.Label(user_f, text=f"  {SESSION.username}  ", font=F(9),
+                 fg=TEXT_WHITE, bg=BG_SURFACE3, pady=6).pack(side="left")
+        badge_f = tk.Frame(user_f, bg=role_color)
+        badge_f.pack(side="left")
+        tk.Label(badge_f, text=f" {role_label} ", font=F(8, True),
+                 fg=BG_DEEP, bg=role_color, pady=6).pack()
+
     #  AUTH
     # ══════════════════════════════════════════════════════════════════════════
     def _logout(self):
         if not msgbox.askyesno("Logout", f"Logout dari akun '{SESSION.username}'?", parent=self):
             return
         SESSION.logout()
+        self._want_logout = True   # sinyal ke main.py → kembali ke halaman login
         self.destroy()
-        import subprocess, sys
-        subprocess.Popen([sys.executable, "main.py"])
 
     # ══════════════════════════════════════════════════════════════════════════
     #  NAV TABS
