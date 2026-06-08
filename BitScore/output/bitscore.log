@@ -235,3 +235,18 @@
 2026-05-25 11:02:42,571 [ERROR] GET fail (3): 404 Client Error: Not Found for url: https://www.cheapshark.com/api/1.0/deals?id=NKw2DmF5J0mve6DCtRE5kiO778vCB5ddUEKk9RPcHcQ%253D
 2026-05-25 11:02:49,711 [ERROR] GET fail (1): 404 Client Error: Not Found for url: https://www.cheapshark.com/api/1.0/deals?id=yRX77X0xCTyBsBG72fVPodnSvorUZbwnSiHJ5YIt9Mw%253D
 2026-05-25 11:02:52,351 [ERROR] GET fail (2): 404 Client Error: Not Found for url: https://www.cheapshark.com/api/1.0/deals?id=yRX77X0xCTyBsBG72fVPodnSvorUZbwnSiHJ5YIt9Mw%253D
+2026-06-07 22:22:32,825 [ERROR] GET fail (1): 404 Client Error: Not Found for url: https://www.cheapshark.com/api/1.0/deals?id=%252B7mFtu1s4rXdW08gG3pe6ylDw0PF5zokn%252BueKvhMal8%253D
+2026-06-07 22:22:35,428 [ERROR] GET fail (2): 404 Client Error: Not Found for url: https://www.cheapshark.com/api/1.0/deals?id=%252B7mFtu1s4rXdW08gG3pe6ylDw0PF5zokn%252BueKvhMal8%253D
+2026-06-07 22:22:39,993 [ERROR] GET fail (3): 404 Client Error: Not Found for url: https://www.cheapshark.com/api/1.0/deals?id=%252B7mFtu1s4rXdW08gG3pe6ylDw0PF5zokn%252BueKvhMal8%253D
+2026-06-07 22:22:46,795 [ERROR] GET fail (1): 404 Client Error: Not Found for url: https://www.cheapshark.com/api/1.0/deals?id=AXGkE9mTWmc4Ex9JyjQ6FmCwsB%252BD959IH9dVGXyFzi0%253D
+2026-06-07 22:22:49,352 [ERROR] GET fail (2): 404 Client Error: Not Found for url: https://www.cheapshark.com/api/1.0/deals?id=AXGkE9mTWmc4Ex9JyjQ6FmCwsB%252BD959IH9dVGXyFzi0%253D
+2026-06-07 22:22:53,902 [ERROR] GET fail (3): 404 Client Error: Not Found for url: https://www.cheapshark.com/api/1.0/deals?id=AXGkE9mTWmc4Ex9JyjQ6FmCwsB%252BD959IH9dVGXyFzi0%253D
+2026-06-07 22:23:02,959 [ERROR] GET fail (1): 404 Client Error: Not Found for url: https://www.cheapshark.com/api/1.0/deals?id=yx9O1uI3iOJ7tsxJoqnIpZ5%252FQGKTz1fR3Z%252BGHxjcZnY%253D
+2026-06-07 22:23:05,526 [ERROR] GET fail (2): 404 Client Error: Not Found for url: https://www.cheapshark.com/api/1.0/deals?id=yx9O1uI3iOJ7tsxJoqnIpZ5%252FQGKTz1fR3Z%252BGHxjcZnY%253D
+2026-06-07 22:23:10,080 [ERROR] GET fail (3): 404 Client Error: Not Found for url: https://www.cheapshark.com/api/1.0/deals?id=yx9O1uI3iOJ7tsxJoqnIpZ5%252FQGKTz1fR3Z%252BGHxjcZnY%253D
+2026-06-07 22:23:16,864 [ERROR] GET fail (1): 404 Client Error: Not Found for url: https://www.cheapshark.com/api/1.0/deals?id=0yH%252B27fnkwwPMEtLKiv52IGhamBesRW%252F9Ictx3%252B%252B2t0%253D
+2026-06-07 22:23:19,417 [ERROR] GET fail (2): 404 Client Error: Not Found for url: https://www.cheapshark.com/api/1.0/deals?id=0yH%252B27fnkwwPMEtLKiv52IGhamBesRW%252F9Ictx3%252B%252B2t0%253D
+2026-06-07 22:23:23,966 [ERROR] GET fail (3): 404 Client Error: Not Found for url: https://www.cheapshark.com/api/1.0/deals?id=0yH%252B27fnkwwPMEtLKiv52IGhamBesRW%252F9Ictx3%252B%252B2t0%253D
+2026-06-07 22:23:23,967 [INFO] Skipped DLC: Divinity: Original Sin 2 - Definitive Edition
+2026-06-07 22:23:23,967 [INFO] Filtered out 1 DLC/expansion entries
+2026-06-07 22:23:23,978 [INFO] Saved: c:\Users\Adam Ahmed Halidi\Python\TekPro_Proyek-C6\BitScore\output\bitscore_20260607_222323.json

@@ -288,7 +288,19 @@ class BitScoreApp(tk.Tk):
         if self.sort_by.get() == "Name":
             games.sort(key=lambda g: g["title"].lower(), reverse=reverse)
         else:
-            games.sort(key=lambda g: (g["metacritic"] or 0), reverse=reverse)
+            # Tiebreaker: 1) metacritic  2) rawg_rating  3) judul alfabet
+            if reverse:
+                games.sort(key=lambda g: (
+                    -(g.get("metacritic") or 0),
+                    -(g.get("rawg_rating") or 0.0),
+                    g["title"].lower()
+                ))
+            else:
+                games.sort(key=lambda g: (
+                    (g.get("metacritic") or 0),
+                    (g.get("rawg_rating") or 0.0),
+                    g["title"].lower()
+                ))
 
         for i, g in enumerate(games, 1):
             g["_rank"] = i

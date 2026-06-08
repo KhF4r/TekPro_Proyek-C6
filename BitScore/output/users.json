@@ -10,20 +10,23 @@
     "password": "user123",
     "role": "user",
     "created_at": ""
-<<<<<<< HEAD
-=======
   },
   {
-    "username": "KhalifahF4r",
-    "password": "khfr032008",
+    "username": "user1",
+    "password": "user12",
     "role": "user",
-    "created_at": "2026-05-18T15:17:05.426447"
+    "created_at": "2026-05-25T14:00:27.567914"
   },
   {
-    "username": "Khalifah",
-    "password": "khfr030108",
+    "username": "adomarff",
+    "password": "feymark",
     "role": "user",
-    "created_at": "2026-05-18T15:48:54.957323"
->>>>>>> 2ca5af10ae69115db40413fe1341c1dff141baae
+    "created_at": "2026-05-25T14:38:22.293502"
+  },
+  {
+    "username": "newuser",
+    "password": "pass123",
+    "role": "user",
+    "created_at": "2026-06-07T21:30:03.795728"
   }
 ]

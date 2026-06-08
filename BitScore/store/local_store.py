@@ -86,16 +86,8 @@ class LocalStore:
         return bool(self.get_user_review(slug, username))
 
     def set_rv(self, slug: str, score: int, text: str, username: str = "user"):
-        """Simpan atau update review milik username untuk game slug."""
+        """Tambahkan review baru milik username untuk game slug."""
         reviews = self._rv.get(slug, [])
-        for rv in reviews:
-            if rv.get("username", "").lower() == username.lower():
-                rv["score"] = score
-                rv["text"]  = text
-                rv["date"]  = datetime.now().strftime("%d/%m/%Y %H:%M")
-                self._rv[slug] = reviews
-                self._save_rv()
-                return
         reviews.append({
             "username": username,
             "score":    score,

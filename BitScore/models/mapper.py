@@ -32,6 +32,7 @@ def map_item(item: dict, idx: int) -> dict:
         "tags":           item.get("tags") or [],
         "rating":         rating,
         "metacritic":     meta,
+        "rawg_rating":    round(float(rawg), 2) if rawg else 0.0,
         "rawg_count":     item.get("rawg_rating_count") or 0,
         "cover_url":      item.get("cover_image") or "",
         "screenshots":    item.get("screenshots") or [],
